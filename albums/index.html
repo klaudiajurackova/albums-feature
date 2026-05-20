@@ -155,6 +155,21 @@
     .meta-grid { grid-template-columns: 1fr; padding: 2.5rem 1.5rem; gap: 2.5rem; }
   }
 
+  .three-up {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    width: 100%;
+  }
+  .three-up img {
+    width: 100%;
+    display: block;
+    height: auto;
+  }
+  @media (max-width: 600px) {
+    .three-up { grid-template-columns: 1fr; }
+  }
+
   .bar { background: #1a1a1a; height: 4px; }
 
   @media (min-width: 900px) {
@@ -223,7 +238,11 @@
     </section>
 
     <div class="img-full">
-      <img src="Frame 354.png" alt="Feature preview" style="width:100%;display:block;">
+      <div class="three-up">
+        <img src="albums.png" alt="Albums">
+        <img src="book-finished.png" alt="Book finished">
+        <img src="active-joker.png" alt="Active joker">
+      </div>
     </div>
 
     <div class="bar"></div>
@@ -325,7 +344,7 @@
       <div class="section-label">Full feature</div>
       <div class="section-title">Every state, every edge case.</div>
       <p class="body-text">From there I designed the full feature: the Albums tab IA, every state across the lifecycle (event running, nearing end, completed, ended), the reward collection flows, the joker card confirmation, tooltip behaviour, and the onboarding carousel.</p>
-      <p class="body-text">Including edge cases like what happens when a player has rewards to collect in both Albums and Achievements at the same time. The default tab opens on the one with rewards available, and the other shows a red notification dot.</p>
+      <p class="body-text">Including edge cases like what happens when a player has rewards to collect in both Albums and Achievements at the same time. Achievements has a higher value in the game so that tab opens and the other shows a red notification dot.</p>
     </section>
 
     <div class="img-full">
