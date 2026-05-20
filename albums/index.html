@@ -158,16 +158,19 @@
   .three-up {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 0;
+    gap: 1rem;
     width: 100%;
+    padding: 1.5rem 2.5rem;
+    background: #F7F4EE;
   }
   .three-up img {
     width: 100%;
     display: block;
     height: auto;
+    border-radius: 6px;
   }
   @media (max-width: 600px) {
-    .three-up { grid-template-columns: 1fr; }
+    .three-up { grid-template-columns: 1fr; padding: 1rem 1.5rem; }
   }
 
   .bar { background: #1a1a1a; height: 4px; }
