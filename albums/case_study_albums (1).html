@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Albums — Klaudia Juráčková</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; background: #F7F4EE; color: #1a1a1a; }
+
+  .nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 2.5rem; background: #F7F4EE; border-bottom: 1px solid #E2DDD6; position: sticky; top: 0; z-index: 20; }
+  .nav-back { font-size: 12px; color: #888; text-decoration: none; letter-spacing: 0.06em; text-transform: uppercase; transition: color 0.15s; }
+  .nav-back:hover { color: #1a1a1a; }
+  .nav-name { font-size: 15px; font-weight: 500; color: #1a1a1a; }
+
+  .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: #7F77DD; width: 0%; z-index: 30; transition: width 0.1s linear; display: none; }
+
+  .page-wrap { display: flex; }
+
+  .sidebar { display: none; width: 200px; flex-shrink: 0; padding: 5rem 0 5rem 2.5rem; }
+  .sidebar-inner { position: sticky; top: 100px; }
+  .sidebar-label { font-size: 10px; color: #BBB; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1.25rem; }
+  .sidebar a { display: block; font-size: 12px; color: #AAA; text-decoration: none; padding: 5px 0 5px 12px; border-left: 2px solid transparent; transition: all 0.15s; margin-bottom: 2px; }
+  .sidebar a:hover { color: #534AB7; }
+  .sidebar a.active { color: #534AB7; border-left-color: #7F77DD; font-weight: 500; }
+
+  .main { flex: 1; min-width: 0; }
+
+  .hero { padding: 5rem 2.5rem 4rem; max-width: 760px; }
+  .hero-meta { font-size: 11px; color: #AAA; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1.25rem; }
+  .hero-title { font-size: 64px; font-weight: 500; color: #1a1a1a; line-height: 0.95; letter-spacing: -0.03em; margin-bottom: 1.5rem; }
+  .hero-title em { font-style: italic; color: #7F77DD; }
+  .hero-hook { font-size: 20px; color: #555; line-height: 1.6; max-width: 580px; margin-bottom: 3rem; }
+  .hero-stats { display: flex; gap: 3rem; padding-top: 2rem; border-top: 1px solid #E2DDD6; flex-wrap: wrap; }
+  .stat-value { font-size: 48px; font-weight: 500; color: #7F77DD; letter-spacing: -0.03em; line-height: 1; }
+  .stat-label { font-size: 11px; color: #888; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; }
+  .stat-divider { width: 1px; background: #E2DDD6; }
+
+  /* ── Media blocks ── */
+  .img-full { width: 100%; overflow: hidden; position: relative; }
+
+  .media-slot {
+    width: 100%;
+    background: #EEEDFE;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    gap: 1rem;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .media-slot:hover { background: #E4E2FC; }
+  .media-slot input[type="file"] { display: none; }
+
+  .media-slot img,
+  .media-slot video {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+
+  .media-slot.has-media { padding: 0; background: #000; cursor: default; }
+  .media-slot.has-media:hover { background: #000; }
+
+  .media-slot-icon {
+    width: 44px;
+    height: 44px;
+    border: 1.5px solid #AFA9EC;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #AFA9EC;
+  }
+  .media-slot-icon svg { width: 20px; height: 20px; }
+  .media-slot-label {
+    font-size: 12px;
+    color: #AFA9EC;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .media-slot-hint {
+    font-size: 11px;
+    color: #C8C5F0;
+    text-align: center;
+    margin-top: -0.25rem;
+  }
+
+  .media-remove {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    display: none;
+    z-index: 5;
+    transition: background 0.15s;
+  }
+  .media-remove:hover { background: rgba(0,0,0,0.8); }
+  .media-slot.has-media .media-remove { pointer-events: auto; display: block; }
+
+  .img-caption { padding: 1rem 2.5rem; font-size: 12px; color: #AAA; border-bottom: 1px solid #E2DDD6; }
+
+  .content { max-width: 680px; padding: 5rem 2.5rem; }
+  .section-label { font-size: 11px; color: #7F77DD; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 1.25rem; }
+  .section-title { font-size: 32px; font-weight: 500; color: #1a1a1a; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 1.25rem; }
+  .body-text { font-size: 16px; color: #444; line-height: 1.8; margin-bottom: 1.5rem; }
+  .body-text:last-child { margin-bottom: 0; }
+
+  .pull-quote { background: #EEEDFE; border-left: 3px solid #7F77DD; padding: 2rem 2.5rem; }
+  .pull-quote-text { font-size: 22px; color: #26215C; line-height: 1.5; font-style: italic; letter-spacing: -0.01em; }
+
+  .outcome { background: #F7F4EE; padding: 5rem 2.5rem; border-top: 1px solid #E2DDD6; }
+  .outcome-label { font-size: 11px; color: #AAA; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 2rem; }
+  .outcome-stats { display: flex; gap: 4rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+  .outcome-stat-value { font-size: 64px; font-weight: 500; color: #7F77DD; letter-spacing: -0.03em; line-height: 1; }
+  .outcome-stat-label { font-size: 12px; color: #888; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 6px; }
+  .outcome-text { font-size: 16px; color: #444; line-height: 1.8; max-width: 560px; }
+
+  .next { padding: 4rem 2.5rem; border-top: 1px solid #E2DDD6; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.15s; }
+  .next:hover { background: #EEEDFE; }
+  .next-label { font-size: 11px; color: #AAA; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .next-title { font-size: 22px; font-weight: 500; color: #1a1a1a; letter-spacing: -0.02em; }
+  .next-arrow { font-size: 32px; color: #CECBF6; }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2rem;
+    padding: 3.5rem 2.5rem;
+    border-bottom: 1px solid #E2DDD6;
+    max-width: 900px;
+  }
+  .meta-col { display: flex; flex-direction: column; gap: 1rem; }
+  .meta-col--right { gap: 2rem; }
+  .meta-label { font-size: 11px; color: #AAA; letter-spacing: 0.12em; text-transform: uppercase; }
+  .meta-role { font-size: 20px; font-weight: 600; color: #1a1a1a; letter-spacing: -0.01em; }
+  .meta-desc { font-size: 15px; color: #666; line-height: 1.6; }
+  .meta-list { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+  .meta-list li { font-size: 15px; color: #444; }
+  .meta-team { font-size: 15px; color: #444; }
+
+  @media (max-width: 899px) {
+    .meta-grid { grid-template-columns: 1fr; padding: 2.5rem 1.5rem; gap: 2.5rem; }
+  }
+
+  .bar { background: #1a1a1a; height: 4px; }
+
+  @media (min-width: 900px) {
+    .sidebar { display: block; }
+  }
+
+  @media (max-width: 899px) {
+    .progress-bar { display: block; }
+    .hero { padding: 3rem 1.5rem 2.5rem; }
+    .hero-title { font-size: 42px; }
+    .hero-hook { font-size: 17px; }
+    .hero-stats { gap: 1.5rem; }
+    .stat-value { font-size: 36px; }
+    .stat-divider { display: none; }
+    .content { padding: 3rem 1.5rem; }
+    .section-title { font-size: 24px; }
+    .body-text { font-size: 15px; }
+    .pull-quote { padding: 1.5rem; }
+    .pull-quote-text { font-size: 18px; }
+    .outcome { padding: 3rem 1.5rem; }
+    .outcome-stat-value { font-size: 48px; }
+    .outcome-stats { gap: 2rem; }
+    .img-caption { padding: 0.75rem 1.5rem; }
+    .next { padding: 2.5rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-name">Klaudia Juráčková</span>
+</nav>
+
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="page-wrap">
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <div class="sidebar-label">On this page</div>
+      <a href="#section-context" id="link-context">Context</a>
+      <a href="#section-problem" id="link-problem">Problem</a>
+      <a href="#section-role" id="link-role">My Role</a>
+      <a href="#section-process" id="link-process">My Process</a>
+      <a href="#section-outcome" id="link-outcome">Outcome</a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <section class="hero">
+      <div class="hero-meta">Diggy's Adventure · Pixelfederation · Mobile · F2P</div>
+      <div class="hero-title"><em>Albums</em></div>
+      <div class="hero-hook">Making a repetitive event feel worth playing again.</div>
+      <div class="hero-stats">
+        <div>
+          <div class="stat-value">+36%</div>
+          <div class="stat-label">Tower event revenue lift post-launch</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div>
+          <div class="stat-value">+6%</div>
+          <div class="stat-label">Tower event engagement post-launch</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="img-full">
+      <div class="media-slot" id="slot-hero-video" data-label="Feature preview" onclick="triggerUpload('slot-hero-video')">
+        <input type="file" accept="video/*,image/*" onchange="handleMedia(event,'slot-hero-video')">
+        <div class="media-slot-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+        <div class="media-slot-label">Feature preview</div>
+        <div class="media-slot-hint">Click to add video or image</div>
+        <button class="media-remove" onclick="removeMedia(event,'slot-hero-video')">Remove</button>
+      </div>
+    </div>
+
+    <div class="bar"></div>
+
+    <section class="meta-grid">
+      <div class="meta-col">
+        <div class="meta-label">Role</div>
+        <div class="meta-role">UX Designer</div>
+        <p class="meta-desc">Owned the information architecture, flows and all states for a new meta system inside Diggy's Adventure events.</p>
+      </div>
+      <div class="meta-col">
+        <div class="meta-label">Responsibilities</div>
+        <ul class="meta-list">
+          <li>Information architecture</li>
+          <li>User flows</li>
+          <li>UI states</li>
+          <li>Onboarding</li>
+          <li>Monetisation moment</li>
+          <li>Edge cases</li>
+        </ul>
+      </div>
+      <div class="meta-col meta-col--right">
+        <div>
+          <div class="meta-label">Team</div>
+          <div class="meta-team">2 GD · 2 Eng · 1 UI · 1 PM</div>
+        </div>
+        <div>
+          <div class="meta-label">Date</div>
+          <div class="meta-team">2023</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content" id="section-context">
+      <div class="section-label">Context</div>
+      <div class="section-title">A game with events at its core.</div>
+      <p class="body-text">Diggy's Adventure is a mobile F2P puzzle game by Pixelfederation. Events are a central part of how the game keeps players engaged. They run on a regular cycle and give players fresh goals outside the main story.</p>
+    </section>
+
+    <section class="content" id="section-problem">
+      <div class="section-label">The problem</div>
+      <div class="section-title">A familiar event that stopped feeling exciting.</div>
+      <p class="body-text">The Tower is a 3-day competitive event where players solve puzzles to climb a leaderboard. Unlike most events that run once, it repeats throughout the year. Its procedurally generated content means it can be produced at scale without significant development cost. After running repeatedly, engagement had dropped. Familiar enough that even the leaderboard competition wasn't pulling players in like it used to.</p>
+    </section>
+
+
+
+    <section class="content" id="section-role">
+      <div class="section-label">My role</div>
+      <div class="section-title">Design the mechanic's home and everything inside it.</div>
+      <p class="body-text">The game designer came up with the Albums mechanic: players find photos hidden across Tower levels and fill themed albums to earn rewards, with three difficulty tiers and a joker card to fill missing slots. My job was to design where it lived and how it worked end to end.</p>
+    </section>
+
+    <div class="pull-quote">
+      <div class="pull-quote-text">"Players already had a mental model for the Museum, things they'd collected or earned. Albums felt like it belonged there rather than something new to learn."</div>
+    </div>
+
+    <section class="content" id="section-process">
+      <div class="section-label">Research</div>
+      <div class="section-title">Look at what exists before designing what's next.</div>
+      <p class="body-text">Before opening Figma I looked at how other F2P mobile games handle collection mechanics, mostly to understand layout patterns and what players are already familiar with.</p>
+      <p class="body-text">Diggy's Adventure is a complex game with a lot of systems, so I started by mapping where players already went to see things they'd earned. The Camp, the game's home screen, had no space for a new destination, which meant I needed to find an existing one. The Museum already housed achievements, trophies and keepsakes: things players had collected or unlocked. That was the right place. Introducing a new destination would have required players to learn a new behaviour. Placing Albums in the Museum meant zero onboarding cost.</p>
+    </section>
+
+    <div class="img-full">
+      <!-- 📸 Replace this slot with your Museum / Albums tab placement screenshot -->
+      <div class="media-slot" id="slot-2" onclick="triggerUpload('slot-2')">
+        <input type="file" accept="image/*,video/*" onchange="handleMedia(event,'slot-2')">
+        <div class="media-slot-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        </div>
+        <div class="media-slot-label">Museum, Albums tab placement</div>
+        <div class="media-slot-hint">Click to add image or video</div>
+        <button class="media-remove" onclick="removeMedia(event,'slot-2')">Remove</button>
+      </div>
+    </div>
+    <div class="img-caption">Albums sits as a tab inside the Museum alongside Achievements, Trophies and Keepsakes.</div>
+
+    <section class="content">
+      <div class="section-label">Format</div>
+      <div class="section-title">Ground the mechanic in something players already know.</div>
+      <p class="body-text">The photo album format was a deliberate choice. Albums was built around the idea of memories, so I wanted the design to connect to something players already understand in real life: pages, bookmarks, photos spread across a spread.</p>
+      <p class="body-text">In F2P games players encounter many systems in quick succession. Grounding a new mechanic in something familiar from real life reduces the cognitive effort needed to understand it. Players spend less time figuring out what Albums is and more time engaging with it.</p>
+      <p class="body-text">Three difficulty tiers mapped naturally to three pages, with the tier name on the bookmark tab making the hierarchy readable at a glance. Mapping difficulty to physical pages creates a natural sense of progression. Easy fills quickly and gives early reward; hard stays empty longest and creates tension. The physical metaphor carries the emotional arc of the mechanic.</p>
+    </section>
+
+    <div class="img-full">
+      <!-- 📸 Replace this slot with your album sets / three difficulty tiers screenshot -->
+      <div class="media-slot" id="slot-3" onclick="triggerUpload('slot-3')">
+        <input type="file" accept="image/*,video/*" onchange="handleMedia(event,'slot-3')">
+        <div class="media-slot-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        </div>
+        <div class="media-slot-label">Album sets, three difficulty tiers</div>
+        <div class="media-slot-hint">Click to add image or video</div>
+        <button class="media-remove" onclick="removeMedia(event,'slot-3')">Remove</button>
+      </div>
+    </div>
+    <div class="img-caption">Three pages, three difficulty tiers. Easy fills quickly; hard creates tension.</div>
+
+    <section class="content">
+      <div class="section-label">The joker card</div>
+      <div class="section-title">Make the monetisation moment feel like a choice.</div>
+      <p class="body-text">The game designer came up with a mechanic where players could fill empty slots they couldn't complete naturally. My job was to make it feel like something players would understand instinctively. I named it the joker card: everyone knows a joker replaces what you're missing.</p>
+      <p class="body-text">Consumables that are hard to recover from need a moment of intentionality in the flow. I designed a confirmation step. The joker card creates a pause that respects the player's agency. They chose to use it, they weren't tricked into it.</p>
+    </section>
+
+    <div class="img-full">
+      <!-- 📸 Replace this slot with your joker card confirmation flow screenshot or recording -->
+      <div class="media-slot" id="slot-4" onclick="triggerUpload('slot-4')">
+        <input type="file" accept="image/*,video/*" onchange="handleMedia(event,'slot-4')">
+        <div class="media-slot-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        </div>
+        <div class="media-slot-label">Joker card confirmation flow</div>
+        <div class="media-slot-hint">Click to add image or video</div>
+        <button class="media-remove" onclick="removeMedia(event,'slot-4')">Remove</button>
+      </div>
+    </div>
+    <div class="img-caption">The confirmation step: a deliberate pause before spending a consumable.</div>
+
+    <section class="content">
+      <div class="section-label">Full feature</div>
+      <div class="section-title">Every state, every edge case.</div>
+      <p class="body-text">From there I designed the full feature: the Albums tab IA, every state across the lifecycle (event running, nearing end, completed, ended), the reward collection flows, the joker card confirmation, tooltip behaviour, and the onboarding carousel.</p>
+      <p class="body-text">Including edge cases like what happens when a player has rewards to collect in both Albums and Achievements at the same time. The default tab opens on the one with rewards available, and the other shows a red notification dot.</p>
+    </section>
+
+    <div class="img-full">
+      <!-- 📸 Replace this slot with your full flow documentation screenshot -->
+      <div class="media-slot" id="slot-5" onclick="triggerUpload('slot-5')">
+        <input type="file" accept="image/*,video/*" onchange="handleMedia(event,'slot-5')">
+        <div class="media-slot-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        </div>
+        <div class="media-slot-label">Full flow documentation</div>
+        <div class="media-slot-hint">Click to add image or video</div>
+        <button class="media-remove" onclick="removeMedia(event,'slot-5')">Remove</button>
+      </div>
+    </div>
+    <div class="img-caption">Annotated flows covering all states, reward collection, tooltips and onboarding.</div>
+
+    <section class="outcome" id="section-outcome">
+      <div class="outcome-label">The outcome</div>
+      <div class="outcome-stats">
+        <div>
+          <div class="outcome-stat-value">+36%</div>
+          <div class="outcome-stat-label">Tower event revenue post-launch</div>
+        </div>
+        <div>
+          <div class="outcome-stat-value">+6%</div>
+          <div class="outcome-stat-label">Tower event engagement post-launch</div>
+        </div>
+      </div>
+
+    </section>
+
+
+
+  </main>
+</div>
+
+<script>
+  /* ── Sidebar active state ── */
+  const sections = ['context', 'problem', 'role', 'process', 'outcome'];
+
+  function updateActive() {
+    let current = 'context';
+    sections.forEach(id => {
+      const el = document.getElementById('section-' + id);
+      if (el && el.getBoundingClientRect().top < 160) current = id;
+    });
+    sections.forEach(id => {
+      const link = document.getElementById('link-' + id);
+      if (link) link.classList.toggle('active', id === current);
+    });
+  }
+
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    const bar = document.getElementById('progress-bar');
+    if (bar) bar.style.width = progress + '%';
+  }
+
+  window.addEventListener('scroll', () => { updateActive(); updateProgress(); });
+  updateActive();
+  updateProgress();
+
+  /* ── Media upload ── */
+  function triggerUpload(slotId) {
+    document.getElementById(slotId).querySelector('input[type="file"]').click();
+  }
+
+  function handleMedia(event, slotId) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const slot = document.getElementById(slotId);
+    const isVideo = file.type.startsWith('video/');
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const src = e.target.result;
+      slot.innerHTML = isVideo
+        ? `<video controls playsinline style="width:100%;display:block;max-height:600px;background:#000;">
+             <source src="${src}" type="${file.type}">
+             <source src="${src}" type="video/mp4">
+           </video>
+           <button class="media-remove" onclick="removeMedia(event,'${slotId}')">Remove</button>`
+        : `<img src="${src}" alt="" style="width:100%;display:block;">
+           <button class="media-remove" onclick="removeMedia(event,'${slotId}')">Remove</button>`;
+
+      slot.classList.add('has-media');
+      slot.removeAttribute('onclick');
+      slot.style.cursor = 'default';
+      slot.style.padding = '0';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeMedia(event, slotId) {
+    event.stopPropagation();
+    const slot = document.getElementById(slotId);
+    const label = slot.dataset.label || '';
+    slot.innerHTML = `
+      <input type="file" accept="video/*,image/*" onchange="handleMedia(event,'${slotId}')">
+      <div class="media-slot-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+      <div class="media-slot-label">${label}</div>
+      <div class="media-slot-hint">Click to add video or image</div>
+      <button class="media-remove" onclick="removeMedia(event,'${slotId}')">Remove</button>`;
+    slot.classList.remove('has-media');
+    slot.setAttribute('onclick', `triggerUpload('${slotId}')`);
+    slot.style.cursor = 'pointer';
+    slot.style.padding = '';
+  }
+</script>
+
+</body>
+</html>
